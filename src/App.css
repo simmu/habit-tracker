@@ -1,0 +1,114 @@
+/* ── Layout ─────────────────────────────────────────────── */
+.app {
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 0 20px;
+  font-family: system-ui, sans-serif;
+}
+
+.app-title {
+  font-size: 2rem;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ── Input ──────────────────────────────────────────────── */
+.habit-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #646cff;
+  }
+}
+
+/* ── List ───────────────────────────────────────────────── */
+.habit-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f4f4f5;
+  font-size: 1rem;
+  border: 1px solid #e4e4e7;
+}
+
+.habit-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Habit actions (streak + button) ────────────────────── */
+.habit-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.habit-streak {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b45309;
+  min-width: 3ch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Done button ────────────────────────────────────────── */
+.habit-done-btn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid #646cff;
+  border-radius: 6px;
+  background: transparent;
+  color: #646cff;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: #646cff;
+    color: #fff;
+  }
+}
+
+.habit-done-btn--done {
+  border-color: #22c55e;
+  color: #16a34a;
+  cursor: default;
+
+  &:hover {
+    background: transparent;
+    color: #16a34a;
+  }
+}
+
+/* ── Empty state ────────────────────────────────────────── */
+.habit-empty {
+  margin-top: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+}
