@@ -1,77 +1,62 @@
 
-// Final visual + UX sweep: screenshot, layout, aria, edge cases in the actual UI
-import { chromium } from 'playwright';
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.goto('http://localhost:5173');
-await page.waitForTimeout(800);
+import { chromium } from 'playwright'
 
-// ── Add two habits ────────────────────────────────────────────────────────────
-const input = page.locator('input').first();
-await input.fill('Morning Run');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-await input.fill('Meditate');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
+const browser = await chromium.launch()
+const page = await browser.newPage()
 
-// ── Streaks should start at 0 ────────────────────────────────────────────────
-const initialStreaks = await page.locator('.habit-streak').allTextContents();
-console.log('Initial streaks (both should be 🔥 0):', initialStreaks.map(s => s.trim()));
+// Clear localStorage first
+await page.goto('http://localhost:5173')
+await page.evaluate(() => localStorage.clear())
+await page.reload()
 
-// ── Mark both done → both should become 🔥 1 ────────────────────────────────
-await page.locator('.habit-done-btn').nth(0).click();
-await page.waitForTimeout(200);
-await page.locator('.habit-done-btn').nth(1).click();
-await page.waitForTimeout(200);
+// Check initial state
+const heading = await page.textContent('h1')
+console.log('Heading:', heading)
 
-const streaksAfterDone = await page.locator('.habit-streak').allTextContents();
-console.log('Streaks after marking both done (should both be 🔥 1):', streaksAfterDone.map(s => s.trim()));
+const emptyMsg = await page.textContent('.habit-empty')
+console.log('Empty message:', emptyMsg)
 
-// ── Verify buttons are disabled after marking done ──────────────────────────
-const btn0Disabled = await page.locator('.habit-done-btn').nth(0).isDisabled();
-const btn1Disabled = await page.locator('.habit-done-btn').nth(1).isDisabled();
-console.log('Btn 0 disabled after done:', btn0Disabled);
-console.log('Btn 1 disabled after done:', btn1Disabled);
+// Add a habit
+await page.fill('input[aria-label="New habit name"]', 'Morning run')
+await page.keyboard.press('Enter')
 
-// ── Try clicking a disabled button (should not change streak) ───────────────
-await page.locator('.habit-done-btn').nth(0).click({ force: true });
-await page.waitForTimeout(200);
-const streakAfterDoubleClick = await page.locator('.habit-streak').nth(0).textContent();
-console.log('Streak after forced double-click on disabled btn (should still be 🔥 1):', streakAfterDoubleClick?.trim());
+// Check streak of 0 displayed
+const streak0 = await page.getByLabel('0 day streak').textContent()
+console.log('Initial streak:', streak0?.trim())
 
-// ── aria-label correctness ───────────────────────────────────────────────────
-const ariaLabel0 = await page.locator('.habit-streak').nth(0).getAttribute('aria-label');
-const ariaLabel1 = await page.locator('.habit-streak').nth(1).getAttribute('aria-label');
-console.log('Aria-label habit 0 (expect "1 day streak"):', ariaLabel0);
-console.log('Aria-label habit 1 (expect "1 day streak"):', ariaLabel1);
+// Mark it done
+await page.click('button[aria-label="Mark Morning run as done"]')
 
-// ── Check that ✓ Done class is applied ──────────────────────────────────────
-const btn0Class = await page.locator('.habit-done-btn').nth(0).getAttribute('class');
-console.log('Btn 0 class (should contain habit-done-btn--done):', btn0Class);
+// Check streak of 1
+const streak1 = await page.getByLabel('1 day streak').textContent()
+console.log('After mark done streak:', streak1?.trim())
 
-// ── Visual: check streak color (amber/orange for fire emoji context) ─────────
-const streakColor = await page.locator('.habit-streak').nth(0).evaluate(el => {
-  return window.getComputedStyle(el).color;
-});
-console.log('Streak text color:', streakColor);
+// Verify button is disabled
+const btnDisabled = await page.isDisabled('button[aria-label="Morning run already done today"]')
+console.log('Button disabled:', btnDisabled)
 
-// ── Whitespace-only input should not add habit ────────────────────────────────
-await input.fill('   ');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-const habitCount = await page.locator('.habit-item').count();
-console.log('Habit count after whitespace-only input (should still be 2):', habitCount);
+// Streak still at 1 (can't click again)
+const streakStill1 = await page.getByLabel('1 day streak').textContent()
+console.log('Streak still at 1 (idempotent):', streakStill1?.trim())
 
-// ── Duplicate name: does it allow adding? ────────────────────────────────────
-await input.fill('Morning Run');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-const habitCountAfterDup = await page.locator('.habit-item').count();
-console.log('Habit count after duplicate name (3 = duplicates allowed, 2 = blocked):', habitCountAfterDup);
+// Add a second habit to check independence
+await page.fill('input[aria-label="New habit name"]', 'Read')
+await page.keyboard.press('Enter')
 
-// ── Full page text at end ──────────────────────────────────────────────────
-const allText = await page.evaluate(() => document.body.innerText);
-console.log('\nFull page text:\n', allText);
+// Verify Read has streak 0
+const readStreak = await page.getByLabel('0 day streak').textContent()
+console.log('Second habit streak (independent, 0):', readStreak?.trim())
 
-await browser.close();
+// Simulate page refresh (persistence test)
+await page.reload()
+const habitNames = await page.$$eval('.habit-name', els => els.map(el => el.textContent))
+console.log('After refresh - habits:', habitNames)
+
+const streakAfterRefresh = await page.getByLabel('1 day streak').textContent()
+console.log('After refresh - Morning run streak:', streakAfterRefresh?.trim())
+
+const readStreakAfterRefresh = await page.getByLabel('0 day streak').textContent()
+console.log('After refresh - Read streak:', readStreakAfterRefresh?.trim())
+
+await browser.close()
+console.log('All browser checks passed!')

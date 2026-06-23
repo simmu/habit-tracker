@@ -1,12 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import HabitInput from './HabitInput'
 import HabitList from './HabitList'
 import { todayISO } from './useStreak'
 import type { Habit } from './types'
 import './App.css'
 
+const STORAGE_KEY = 'habit-tracker:habits'
+
+function loadHabits(): Habit[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed as Habit[]
+  } catch {
+    return []
+  }
+}
+
+function saveHabits(habits: Habit[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(habits))
+}
+
 function App() {
-  const [habits, setHabits] = useState<Habit[]>([])
+  const [habits, setHabits] = useState<Habit[]>(loadHabits)
+
+  useEffect(() => {
+    saveHabits(habits)
+  }, [habits])
 
   function addHabit(name: string) {
     const newHabit: Habit = {

@@ -76,3 +76,38 @@ describe('App – streak flow', () => {
     expect(screen.getByRole('button', { name: /stretch already done today/i })).toBeDisabled()
   })
 })
+
+describe('App – persistence', () => {
+  it('restores habits and streaks after a simulated page refresh', async () => {
+    // First "session": add a habit and mark it done
+    const { unmount } = render(<App />)
+    const input = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(input, 'Yoga{Enter}')
+    await userEvent.click(screen.getByRole('button', { name: /mark yoga as done/i }))
+    expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
+    unmount()
+
+    // Second "session": re-mount App – localStorage should restore the habit and streak
+    render(<App />)
+    expect(screen.getByText('Yoga')).toBeInTheDocument()
+    expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
+  })
+
+  it('two habits keep independent streaks after a refresh', async () => {
+    // First session: add two habits, mark only one done
+    const { unmount } = render(<App />)
+    const input = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(input, 'Run{Enter}')
+    await userEvent.type(input, 'Read{Enter}')
+    await userEvent.click(screen.getByRole('button', { name: /mark run as done/i }))
+    unmount()
+
+    // Second session: verify independent streaks
+    render(<App />)
+    expect(screen.getByText('Run')).toBeInTheDocument()
+    expect(screen.getByText('Read')).toBeInTheDocument()
+    // Run streak = 1, Read streak = 0
+    expect(screen.getByLabelText(/^1 day streak$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^0 day streak$/i)).toBeInTheDocument()
+  })
+})
