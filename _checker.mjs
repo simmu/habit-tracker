@@ -1,62 +1,54 @@
 
-import { chromium } from 'playwright'
+import { chromium } from 'playwright';
 
-const browser = await chromium.launch()
-const page = await browser.newPage()
+const browser = await chromium.launch();
+const page = await browser.newPage();
 
-// Clear localStorage first
-await page.goto('http://localhost:5173')
-await page.evaluate(() => localStorage.clear())
-await page.reload()
+// ── Screenshot: full visual check with a seeded multi-day streak ──
+const today = new Date();
+const toISO = (d) => d.toISOString().slice(0, 10);
+const daysAgo = (n) => { const d = new Date(today); d.setDate(today.getDate() - n); return toISO(d); };
 
-// Check initial state
-const heading = await page.textContent('h1')
-console.log('Heading:', heading)
+const habits = [
+  { id: '1', name: 'Morning Run', completedDates: [daysAgo(0), daysAgo(1), daysAgo(2), daysAgo(3)] },
+  { id: '2', name: 'Read 30min', completedDates: [daysAgo(1)] },
+  { id: '3', name: 'Meditate', completedDates: [] },
+];
 
-const emptyMsg = await page.textContent('.habit-empty')
-console.log('Empty message:', emptyMsg)
+await page.goto('http://localhost:5173');
+await page.evaluate((data) => {
+  localStorage.setItem('habit-tracker:habits', JSON.stringify(data));
+}, habits);
+await page.reload();
+await page.waitForLoadState('networkidle');
+await page.waitForTimeout(500);
 
-// Add a habit
-await page.fill('input[aria-label="New habit name"]', 'Morning run')
-await page.keyboard.press('Enter')
+await page.screenshot({ path: '/tmp/streak-visual.png', fullPage: true });
+console.log('VISUAL SCREENSHOT SAVED');
 
-// Check streak of 0 displayed
-const streak0 = await page.getByLabel('0 day streak').textContent()
-console.log('Initial streak:', streak0?.trim())
+// Verify all rendered correctly
+const names = await page.$$eval('.habit-name', els => els.map(el => el.textContent.trim()));
+const streaks = await page.$$eval('.habit-streak', els => els.map(el => el.textContent.trim()));
+const btnTexts = await page.$$eval('.habit-done-btn', els => els.map(el => el.textContent.trim()));
+const btnDisableds = await page.$$eval('.habit-done-btn', els => els.map(el => el.disabled));
 
-// Mark it done
-await page.click('button[aria-label="Mark Morning run as done"]')
+for (let i = 0; i < names.length; i++) {
+  console.log(`${names[i]} | streak: ${streaks[i]} | btn: "${btnTexts[i]}" | disabled: ${btnDisableds[i]}`);
+}
 
-// Check streak of 1
-const streak1 = await page.getByLabel('1 day streak').textContent()
-console.log('After mark done streak:', streak1?.trim())
+// Check streak badge bounding boxes relative to button (should be to the left of button)
+const streakBoxes = await page.$$eval('.habit-streak', els => els.map(el => {
+  const r = el.getBoundingClientRect();
+  return { left: Math.round(r.left), right: Math.round(r.right) };
+}));
+const btnBoxes = await page.$$eval('.habit-done-btn', els => els.map(el => {
+  const r = el.getBoundingClientRect();
+  return { left: Math.round(r.left), right: Math.round(r.right) };
+}));
 
-// Verify button is disabled
-const btnDisabled = await page.isDisabled('button[aria-label="Morning run already done today"]')
-console.log('Button disabled:', btnDisabled)
+for (let i = 0; i < names.length; i++) {
+  const streakIsLeftOfBtn = streakBoxes[i].right <= btnBoxes[i].left;
+  console.log(`${names[i]} | streak right:${streakBoxes[i].right} btn left:${btnBoxes[i].left} | streak left of btn: ${streakIsLeftOfBtn}`);
+}
 
-// Streak still at 1 (can't click again)
-const streakStill1 = await page.getByLabel('1 day streak').textContent()
-console.log('Streak still at 1 (idempotent):', streakStill1?.trim())
-
-// Add a second habit to check independence
-await page.fill('input[aria-label="New habit name"]', 'Read')
-await page.keyboard.press('Enter')
-
-// Verify Read has streak 0
-const readStreak = await page.getByLabel('0 day streak').textContent()
-console.log('Second habit streak (independent, 0):', readStreak?.trim())
-
-// Simulate page refresh (persistence test)
-await page.reload()
-const habitNames = await page.$$eval('.habit-name', els => els.map(el => el.textContent))
-console.log('After refresh - habits:', habitNames)
-
-const streakAfterRefresh = await page.getByLabel('1 day streak').textContent()
-console.log('After refresh - Morning run streak:', streakAfterRefresh?.trim())
-
-const readStreakAfterRefresh = await page.getByLabel('0 day streak').textContent()
-console.log('After refresh - Read streak:', readStreakAfterRefresh?.trim())
-
-await browser.close()
-console.log('All browser checks passed!')
+await browser.close();
