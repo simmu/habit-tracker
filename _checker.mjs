@@ -1,77 +1,54 @@
 
-// Final visual + UX sweep: screenshot, layout, aria, edge cases in the actual UI
 import { chromium } from 'playwright';
+
 const browser = await chromium.launch();
 const page = await browser.newPage();
+
+// ── Screenshot: full visual check with a seeded multi-day streak ──
+const today = new Date();
+const toISO = (d) => d.toISOString().slice(0, 10);
+const daysAgo = (n) => { const d = new Date(today); d.setDate(today.getDate() - n); return toISO(d); };
+
+const habits = [
+  { id: '1', name: 'Morning Run', completedDates: [daysAgo(0), daysAgo(1), daysAgo(2), daysAgo(3)] },
+  { id: '2', name: 'Read 30min', completedDates: [daysAgo(1)] },
+  { id: '3', name: 'Meditate', completedDates: [] },
+];
+
 await page.goto('http://localhost:5173');
-await page.waitForTimeout(800);
+await page.evaluate((data) => {
+  localStorage.setItem('habit-tracker:habits', JSON.stringify(data));
+}, habits);
+await page.reload();
+await page.waitForLoadState('networkidle');
+await page.waitForTimeout(500);
 
-// ── Add two habits ────────────────────────────────────────────────────────────
-const input = page.locator('input').first();
-await input.fill('Morning Run');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-await input.fill('Meditate');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
+await page.screenshot({ path: '/tmp/streak-visual.png', fullPage: true });
+console.log('VISUAL SCREENSHOT SAVED');
 
-// ── Streaks should start at 0 ────────────────────────────────────────────────
-const initialStreaks = await page.locator('.habit-streak').allTextContents();
-console.log('Initial streaks (both should be 🔥 0):', initialStreaks.map(s => s.trim()));
+// Verify all rendered correctly
+const names = await page.$$eval('.habit-name', els => els.map(el => el.textContent.trim()));
+const streaks = await page.$$eval('.habit-streak', els => els.map(el => el.textContent.trim()));
+const btnTexts = await page.$$eval('.habit-done-btn', els => els.map(el => el.textContent.trim()));
+const btnDisableds = await page.$$eval('.habit-done-btn', els => els.map(el => el.disabled));
 
-// ── Mark both done → both should become 🔥 1 ────────────────────────────────
-await page.locator('.habit-done-btn').nth(0).click();
-await page.waitForTimeout(200);
-await page.locator('.habit-done-btn').nth(1).click();
-await page.waitForTimeout(200);
+for (let i = 0; i < names.length; i++) {
+  console.log(`${names[i]} | streak: ${streaks[i]} | btn: "${btnTexts[i]}" | disabled: ${btnDisableds[i]}`);
+}
 
-const streaksAfterDone = await page.locator('.habit-streak').allTextContents();
-console.log('Streaks after marking both done (should both be 🔥 1):', streaksAfterDone.map(s => s.trim()));
+// Check streak badge bounding boxes relative to button (should be to the left of button)
+const streakBoxes = await page.$$eval('.habit-streak', els => els.map(el => {
+  const r = el.getBoundingClientRect();
+  return { left: Math.round(r.left), right: Math.round(r.right) };
+}));
+const btnBoxes = await page.$$eval('.habit-done-btn', els => els.map(el => {
+  const r = el.getBoundingClientRect();
+  return { left: Math.round(r.left), right: Math.round(r.right) };
+}));
 
-// ── Verify buttons are disabled after marking done ──────────────────────────
-const btn0Disabled = await page.locator('.habit-done-btn').nth(0).isDisabled();
-const btn1Disabled = await page.locator('.habit-done-btn').nth(1).isDisabled();
-console.log('Btn 0 disabled after done:', btn0Disabled);
-console.log('Btn 1 disabled after done:', btn1Disabled);
-
-// ── Try clicking a disabled button (should not change streak) ───────────────
-await page.locator('.habit-done-btn').nth(0).click({ force: true });
-await page.waitForTimeout(200);
-const streakAfterDoubleClick = await page.locator('.habit-streak').nth(0).textContent();
-console.log('Streak after forced double-click on disabled btn (should still be 🔥 1):', streakAfterDoubleClick?.trim());
-
-// ── aria-label correctness ───────────────────────────────────────────────────
-const ariaLabel0 = await page.locator('.habit-streak').nth(0).getAttribute('aria-label');
-const ariaLabel1 = await page.locator('.habit-streak').nth(1).getAttribute('aria-label');
-console.log('Aria-label habit 0 (expect "1 day streak"):', ariaLabel0);
-console.log('Aria-label habit 1 (expect "1 day streak"):', ariaLabel1);
-
-// ── Check that ✓ Done class is applied ──────────────────────────────────────
-const btn0Class = await page.locator('.habit-done-btn').nth(0).getAttribute('class');
-console.log('Btn 0 class (should contain habit-done-btn--done):', btn0Class);
-
-// ── Visual: check streak color (amber/orange for fire emoji context) ─────────
-const streakColor = await page.locator('.habit-streak').nth(0).evaluate(el => {
-  return window.getComputedStyle(el).color;
-});
-console.log('Streak text color:', streakColor);
-
-// ── Whitespace-only input should not add habit ────────────────────────────────
-await input.fill('   ');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-const habitCount = await page.locator('.habit-item').count();
-console.log('Habit count after whitespace-only input (should still be 2):', habitCount);
-
-// ── Duplicate name: does it allow adding? ────────────────────────────────────
-await input.fill('Morning Run');
-await page.keyboard.press('Enter');
-await page.waitForTimeout(200);
-const habitCountAfterDup = await page.locator('.habit-item').count();
-console.log('Habit count after duplicate name (3 = duplicates allowed, 2 = blocked):', habitCountAfterDup);
-
-// ── Full page text at end ──────────────────────────────────────────────────
-const allText = await page.evaluate(() => document.body.innerText);
-console.log('\nFull page text:\n', allText);
+for (let i = 0; i < names.length; i++) {
+  const streakIsLeftOfBtn = streakBoxes[i].right <= btnBoxes[i].left;
+  console.log(`${names[i]} | streak right:${streakBoxes[i].right} btn left:${btnBoxes[i].left} | streak left of btn: ${streakIsLeftOfBtn}`);
+}
 
 await browser.close();
