@@ -1,13 +1,12 @@
 /* ── Layout ─────────────────────────────────────────────── */
 .app {
   max-width: 480px;
-  margin: 60px auto;
-  padding: 0 20px;
-  font-family: system-ui, sans-serif;
+  margin: 0 auto;
+  font-family: var(--sans);
 }
 
 .app-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -16,23 +15,76 @@
 .habit-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 1rem;
-  border: 2px solid #ccc;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus {
-    border-color: #646cff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
+
+  &::placeholder {
+    color: var(--text-soft);
+  }
+}
+
+/* ── Progress ring ──────────────────────────────────────── */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.progress-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.progress-ring svg {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-track {
+  fill: none;
+  stroke: var(--border);
+}
+
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress-ring-label {
+  position: absolute;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-soft);
 }
 
 /* ── List ───────────────────────────────────────────────── */
 .habit-list {
   list-style: none;
   padding: 0;
-  margin: 20px 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -43,11 +95,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 8px;
-  background: #f4f4f5;
+  background: var(--surface);
   font-size: 1rem;
-  border: 1px solid #e4e4e7;
+  border: 1px solid var(--border);
 }
 
 .habit-name {
@@ -62,14 +114,14 @@
 .habit-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .habit-streak {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #b45309;
+  color: var(--text-soft);
   min-width: 3ch;
   text-align: right;
   white-space: nowrap;
@@ -77,38 +129,38 @@
 
 /* ── Done button ────────────────────────────────────────── */
 .habit-done-btn {
-  padding: 4px 12px;
+  padding: 6px 12px;
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1.5px solid #646cff;
+  line-height: 1.5;
+  border: 1.5px solid var(--accent);
   border-radius: 6px;
   background: transparent;
-  color: #646cff;
+  color: var(--accent);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
 
-  &:hover:not(:disabled) {
-    background: #646cff;
-    color: #fff;
+  &:hover {
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 
 .habit-done-btn--done {
-  border-color: #22c55e;
-  color: #16a34a;
-  cursor: default;
+  background: var(--accent-soft);
+  color: var(--accent);
 
   &:hover {
-    background: transparent;
-    color: #16a34a;
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 
 /* ── Empty state ────────────────────────────────────────── */
 .habit-empty {
-  margin-top: 20px;
+  margin-top: 24px;
   text-align: center;
-  color: #888;
+  color: var(--text-soft);
   font-size: 0.95rem;
 }

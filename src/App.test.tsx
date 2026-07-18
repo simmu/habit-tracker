@@ -12,6 +12,26 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+function getProgressRing() {
+  return screen.getByRole('img', { name: /% complete/i })
+}
+
+function getProgressText() {
+  return screen.getByText(/of \d+ habits done/i)
+}
+
+function addHabit(name: string) {
+  return userEvent.type(screen.getByRole('textbox', { name: /new habit name/i }), `${name}{Enter}`)
+}
+
+function markDone(name: string) {
+  return userEvent.click(screen.getByRole('button', { name: new RegExp(`mark ${name} as done`, 'i') }))
+}
+
+function undo(name: string) {
+  return userEvent.click(screen.getByRole('button', { name: new RegExp(`${name} done today, click to undo`, 'i') }))
+}
+
 describe('App – add habit flow', () => {
   it('renders the page heading', () => {
     render(<App />)
@@ -25,9 +45,7 @@ describe('App – add habit flow', () => {
 
   it('adds a habit to the list when the user types and presses Enter', async () => {
     render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-
-    await userEvent.type(input, 'Morning run{Enter}')
+    await addHabit('Morning run')
 
     expect(screen.getByText('Morning run')).toBeInTheDocument()
     expect(screen.queryByText(/no habits yet/i)).not.toBeInTheDocument()
@@ -35,10 +53,8 @@ describe('App – add habit flow', () => {
 
   it('can add multiple habits one after another', async () => {
     render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-
-    await userEvent.type(input, 'Drink water{Enter}')
-    await userEvent.type(input, 'Stretch{Enter}')
+    await addHabit('Drink water')
+    await addHabit('Stretch')
 
     expect(screen.getByText('Drink water')).toBeInTheDocument()
     expect(screen.getByText('Stretch')).toBeInTheDocument()
@@ -49,31 +65,97 @@ describe('App – add habit flow', () => {
 describe('App – streak flow', () => {
   it('shows a streak of 0 for a newly added habit', async () => {
     render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-    await userEvent.type(input, 'Read{Enter}')
+    await addHabit('Read')
 
     expect(screen.getByLabelText(/0 day streak/i)).toBeInTheDocument()
   })
 
   it('increments the streak to 1 after marking a habit done', async () => {
     render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-    await userEvent.type(input, 'Meditate{Enter}')
+    await addHabit('Meditate')
 
-    await userEvent.click(screen.getByRole('button', { name: /mark meditate as done/i }))
+    await markDone('Meditate')
 
     expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
   })
 
-  it('disables the "Mark done" button after clicking it', async () => {
+  it('allows toggling a habit back off', async () => {
     render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-    await userEvent.type(input, 'Stretch{Enter}')
+    await addHabit('Stretch')
 
-    const btn = screen.getByRole('button', { name: /mark stretch as done/i })
-    await userEvent.click(btn)
+    await markDone('Stretch')
+    expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
 
-    expect(screen.getByRole('button', { name: /stretch already done today/i })).toBeDisabled()
+    await undo('Stretch')
+    expect(screen.getByLabelText(/0 day streak/i)).toBeInTheDocument()
+  })
+})
+
+describe('App – progress ring', () => {
+  it('appears on the main habit list screen', () => {
+    render(<App />)
+    expect(getProgressRing()).toBeInTheDocument()
+  })
+
+  it('shows 0% complete when no habits are checked in today', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    expect(getProgressRing()).toHaveAttribute('aria-label', '0% complete')
+    expect(getProgressText()).toHaveTextContent('0 of 1 habits done')
+  })
+
+  it('increases the ring fill and percentage when a habit is checked', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+
+    expect(getProgressRing()).toHaveAttribute('aria-label', '50% complete')
+    expect(getProgressText()).toHaveTextContent('1 of 2 habits done')
+  })
+
+  it('decreases the ring fill and percentage when a habit is unchecked', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    await markDone('Run')
+    expect(getProgressRing()).toHaveAttribute('aria-label', '100% complete')
+
+    await undo('Run')
+
+    expect(getProgressRing()).toHaveAttribute('aria-label', '50% complete')
+    expect(getProgressText()).toHaveTextContent('1 of 2 habits done')
+  })
+
+  it('shows 100% complete when all habits are checked in today', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    await markDone('Run')
+
+    expect(getProgressRing()).toHaveAttribute('aria-label', '100% complete')
+    expect(getProgressText()).toHaveTextContent('2 of 2 habits done')
+  })
+
+  it('keeps the percentage text matching the fill level', async () => {
+    render(<App />)
+    await addHabit('A')
+    await addHabit('B')
+    await addHabit('C')
+
+    await markDone('A')
+    expect(getProgressRing()).toHaveAttribute('aria-label', '33% complete')
+    expect(screen.getByText('33%')).toBeInTheDocument()
+
+    await markDone('B')
+    expect(getProgressRing()).toHaveAttribute('aria-label', '67% complete')
+    expect(screen.getByText('67%')).toBeInTheDocument()
   })
 })
 
@@ -81,9 +163,8 @@ describe('App – persistence', () => {
   it('restores habits and streaks after a simulated page refresh', async () => {
     // First "session": add a habit and mark it done
     const { unmount } = render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-    await userEvent.type(input, 'Yoga{Enter}')
-    await userEvent.click(screen.getByRole('button', { name: /mark yoga as done/i }))
+    await addHabit('Yoga')
+    await markDone('Yoga')
     expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
     unmount()
 
@@ -96,10 +177,9 @@ describe('App – persistence', () => {
   it('two habits keep independent streaks after a refresh', async () => {
     // First session: add two habits, mark only one done
     const { unmount } = render(<App />)
-    const input = screen.getByRole('textbox', { name: /new habit name/i })
-    await userEvent.type(input, 'Run{Enter}')
-    await userEvent.type(input, 'Read{Enter}')
-    await userEvent.click(screen.getByRole('button', { name: /mark run as done/i }))
+    await addHabit('Run')
+    await addHabit('Read')
+    await markDone('Run')
     unmount()
 
     // Second session: verify independent streaks
