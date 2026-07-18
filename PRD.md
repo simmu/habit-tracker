@@ -1,23 +1,22 @@
-# PRD: Streak Counter
+# PRD: Weekly Stats Chart
 
 ## Why
-Users need instant feedback on their consistency so they stay motivated to keep habits going every day. Right now there is no visible record of consecutive days, making it hard to feel the momentum of a streak.
+Users have no way to see their habit completion trends over time, making it hard to spot patterns or stay motivated by visible progress.
 
 ## What
-Each habit displays a live streak counter showing how many consecutive calendar days in a row it has been marked done. The counter is shown next to the habit name using a flame emoji (🔥) and a number. Marking a habit done today increases the streak by 1. If a day is skipped (i.e. the habit was not marked done yesterday), the streak resets to 0. Completing a habit more than once in the same day does not inflate the streak. The streak persists across page refreshes.
+A "This Week" stats section displayed on the main screen, below the habit list. It shows a bar chart with one bar per day of the current week (Mon–Sun). Each bar's height represents the number of habits completed on that day. The current day is visually highlighted. Days in the future have empty/greyed-out bars. Hovering over (or tapping) a bar shows a tooltip with the exact count (e.g. "3 habits completed").
 
 ## Done when (each line must be testable by clicking the app)
-- [ ] A newly added habit shows a streak of 🔥 0
-- [ ] Clicking "Mark done" on a habit for the first time increments its streak from 0 to 1
-- [ ] Clicking "Mark done" again on the same day does not increase the streak beyond 1
-- [ ] After the streak is at least 1, the number displayed next to 🔥 matches the count of consecutive days the habit has been checked off
-- [ ] The streak value is still correct after the page is refreshed (data persists)
-- [ ] Two different habits each show their own independent streak counters that update separately
-- [ ] A habit that has never been marked done always shows 🔥 0
+- [ ] A bar chart labelled "This Week" is visible on the main screen below the habit list
+- [ ] The chart has exactly 7 bars, one for each day of the week (Mon–Sun), each labelled with a short day name (Mon, Tue, … Sun)
+- [ ] Completing a habit on today's date causes today's bar to grow taller immediately (without a page refresh)
+- [ ] Un-completing a habit on today's date causes today's bar to shrink immediately
+- [ ] Today's bar is visually distinct from the other bars (different colour or highlight)
+- [ ] Future-day bars are visually greyed out or empty, clearly distinguishable from past/present days
+- [ ] Hovering over any bar shows a tooltip displaying the number of habits completed that day
 
 ## Out of scope (what we are NOT doing right now)
-- Manually editing or overriding the streak count
-- Notifications or reminders when a streak is about to break
-- Longest-streak or best-streak history
-- Streak milestones, badges, or animations
-- Visualising past check-off history (e.g. calendar heatmap)
+- Viewing stats for previous or future weeks
+- Per-habit breakdown within the chart
+- Streak counters or any other aggregate statistics
+- Exporting or sharing the chart
