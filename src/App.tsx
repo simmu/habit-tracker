@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import HabitInput from './HabitInput'
 import HabitList from './HabitList'
+import HabitSearch from './HabitSearch'
 import { todayISO } from './useStreak'
 import type { Habit } from './types'
 import './App.css'
@@ -25,6 +26,7 @@ function saveHabits(habits: Habit[]): void {
 
 function App() {
   const [habits, setHabits] = useState<Habit[]>(loadHabits)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     saveHabits(habits)
@@ -50,11 +52,18 @@ function App() {
     )
   }
 
+  const trimmedQuery = searchQuery.trim()
+
+  const filteredHabits = trimmedQuery
+    ? habits.filter((h) => h.name.toLowerCase().includes(trimmedQuery.toLowerCase()))
+    : habits
+
   return (
     <main className="app">
       <h1 className="app-title">Habit Tracker</h1>
       <HabitInput onAdd={addHabit} />
-      <HabitList habits={habits} onComplete={completeHabit} />
+      <HabitSearch value={searchQuery} onChange={setSearchQuery} />
+      <HabitList habits={filteredHabits} onComplete={completeHabit} searchActive={!!trimmedQuery} />
     </main>
   )
 }
