@@ -125,74 +125,81 @@
 /* ── Celebration ────────────────────────────────────────── */
 .celebration {
   position: fixed;
-  top: 35%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  padding-bottom: 15vh;
   pointer-events: none;
 }
 
-.celebration__burst {
-  position: relative;
-  width: 16px;
-  height: 16px;
-}
-
-.celebration__particle {
+.celebration__confetti {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  transform: translate(-50%, -50%);
-  animation: celebration-burst 0.8s ease-out forwards;
-  animation-delay: calc(var(--i) * 0.03s);
+  inset: 0;
+  overflow: hidden;
 }
 
-@keyframes celebration-burst {
+.celebration__piece {
+  position: absolute;
+  left: var(--left);
+  bottom: -16px;
+  width: var(--size);
+  height: var(--size);
+  background: var(--color);
+  border-radius: 1px;
+  opacity: 0;
+  animation: confetti-pop-fall var(--duration) ease-out var(--delay) forwards;
+}
+
+.celebration__piece--circle {
+  border-radius: 50%;
+}
+
+@keyframes confetti-pop-fall {
   0% {
-    transform: translate(-50%, -50%) scale(0.5);
+    transform: translateY(0) translateX(0) rotate(0deg);
     opacity: 0;
   }
-  10% {
+  8% {
     opacity: 1;
   }
+  30% {
+    transform: translateY(calc(-42svh - var(--size) * 3)) translateX(calc(var(--drift) * 0.25)) rotate(calc(120deg * var(--rotate-dir)));
+  }
   100% {
-    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+    transform: translateY(22svh) translateX(var(--drift)) rotate(calc(720deg * var(--rotate-dir)));
     opacity: 0;
   }
 }
 
 .celebration__label {
-  font-size: 1rem;
-  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--accent);
   opacity: 0;
-  animation: celebration-fade 2.2s ease-in-out forwards;
+  animation: celebration-fade 3s ease-in-out forwards;
 }
 
 @keyframes celebration-fade {
   0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(12px) scale(0.96);
   }
   12% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   80% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-8px) scale(0.98);
   }
 }
 

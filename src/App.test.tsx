@@ -3,6 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 
+vi.mock('./celebrationSound', () => ({
+  playCelebrationSound: vi.fn(),
+}))
+
 // Only fake the Date object – leave setTimeout/Promise intact so userEvent works.
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] })
@@ -294,7 +298,7 @@ describe('App – daily completion celebration', () => {
 
     await waitFor(() => {
       expect(getCelebration()).not.toBeInTheDocument()
-    }, { timeout: 3000 })
+    }, { timeout: 5000 })
   })
 
   it('does not celebrate on initial load even if all habits are already done', async () => {
