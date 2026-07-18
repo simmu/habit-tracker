@@ -27,8 +27,11 @@ export default function HabitRow({ habit, onComplete }: Props) {
         <button
           className={`habit-done-btn${completedToday ? ' habit-done-btn--done' : ''}`}
           onClick={() => onComplete(habit.id)}
-          disabled={completedToday}
-          aria-label={completedToday ? `${habit.name} already done today` : `Mark ${habit.name} as done`}
+          aria-label={
+            completedToday
+              ? `Undo ${habit.name} for today`
+              : `Mark ${habit.name} as done`
+          }
         >
           {completedToday ? '✓ Done' : 'Mark done'}
         </button>

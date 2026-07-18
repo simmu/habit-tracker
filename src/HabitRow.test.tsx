@@ -64,14 +64,14 @@ describe('HabitRow', () => {
     expect(screen.getByRole('button', { name: /mark exercise as done/i })).toBeInTheDocument()
   })
 
-  it('shows a "✓ Done" button when already completed today', () => {
+  it('shows an "Undo" button when already completed today', () => {
     renderRow(makeHabit({ completedDates: [TODAY] }))
     expect(
-      screen.getByRole('button', { name: /exercise already done today/i }),
+      screen.getByRole('button', { name: /undo exercise for today/i }),
     ).toBeInTheDocument()
   })
 
-  it('calls onComplete with the habit id when the button is clicked', async () => {
+  it('calls onComplete with the habit id when the "Mark done" button is clicked', async () => {
     const onComplete = vi.fn()
     renderRow(makeHabit(), onComplete)
     await userEvent.click(screen.getByRole('button', { name: /mark exercise as done/i }))
@@ -79,15 +79,16 @@ describe('HabitRow', () => {
     expect(onComplete).toHaveBeenCalledWith('habit-1')
   })
 
-  it('disables the button after the habit is completed today', () => {
-    renderRow(makeHabit({ completedDates: [TODAY] }))
-    expect(screen.getByRole('button')).toBeDisabled()
-  })
-
-  it('does not call onComplete when the done button is disabled', async () => {
+  it('calls onComplete with the habit id when the "Undo" button is clicked', async () => {
     const onComplete = vi.fn()
     renderRow(makeHabit({ completedDates: [TODAY] }), onComplete)
-    await userEvent.click(screen.getByRole('button'))
-    expect(onComplete).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: /undo exercise for today/i }))
+    expect(onComplete).toHaveBeenCalledOnce()
+    expect(onComplete).toHaveBeenCalledWith('habit-1')
+  })
+
+  it('the done button is not disabled so it can be toggled', () => {
+    renderRow(makeHabit({ completedDates: [TODAY] }))
+    expect(screen.getByRole('button', { name: /undo exercise for today/i })).not.toBeDisabled()
   })
 })

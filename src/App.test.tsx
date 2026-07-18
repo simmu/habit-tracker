@@ -65,15 +65,26 @@ describe('App – streak flow', () => {
     expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
   })
 
-  it('disables the "Mark done" button after clicking it', async () => {
+  it('shows the "Undo" button after clicking "Mark done"', async () => {
     render(<App />)
     const input = screen.getByRole('textbox', { name: /new habit name/i })
     await userEvent.type(input, 'Stretch{Enter}')
 
-    const btn = screen.getByRole('button', { name: /mark stretch as done/i })
-    await userEvent.click(btn)
+    await userEvent.click(screen.getByRole('button', { name: /mark stretch as done/i }))
 
-    expect(screen.getByRole('button', { name: /stretch already done today/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /undo stretch for today/i })).toBeInTheDocument()
+  })
+
+  it('un-completing a habit resets its streak', async () => {
+    render(<App />)
+    const input = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(input, 'Stretch{Enter}')
+
+    await userEvent.click(screen.getByRole('button', { name: /mark stretch as done/i }))
+    expect(screen.getByLabelText(/1 day streak/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /undo stretch for today/i }))
+    expect(screen.getByLabelText(/0 day streak/i)).toBeInTheDocument()
   })
 })
 
@@ -109,5 +120,44 @@ describe('App – persistence', () => {
     // Run streak = 1, Read streak = 0
     expect(screen.getByLabelText(/^1 day streak$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^0 day streak$/i)).toBeInTheDocument()
+  })
+})
+
+describe('App – weekly stats chart', () => {
+  it('renders the "This Week" chart heading', () => {
+    render(<App />)
+    expect(screen.getByRole('heading', { name: /this week/i })).toBeInTheDocument()
+  })
+
+  it('chart has 7 bars', () => {
+    render(<App />)
+    const bars = screen.getAllByTestId(/^bar-/)
+    expect(bars).toHaveLength(7)
+  })
+
+  it("completing a habit increases today's bar count in aria-label", async () => {
+    render(<App />)
+    const input = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(input, 'Run{Enter}')
+
+    // Before completing: today bar shows 0
+    // 2024-06-15 is a Saturday
+    expect(screen.getByLabelText('Sat: 0 habits completed')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /mark run as done/i }))
+
+    expect(screen.getByLabelText('Sat: 1 habits completed')).toBeInTheDocument()
+  })
+
+  it("un-completing a habit decreases today's bar count", async () => {
+    render(<App />)
+    const input = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(input, 'Run{Enter}')
+
+    await userEvent.click(screen.getByRole('button', { name: /mark run as done/i }))
+    expect(screen.getByLabelText('Sat: 1 habits completed')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /undo run for today/i }))
+    expect(screen.getByLabelText('Sat: 0 habits completed')).toBeInTheDocument()
   })
 })

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import HabitInput from './HabitInput'
 import HabitList from './HabitList'
+import WeeklyStatsChart from './WeeklyStatsChart'
 import { todayISO } from './useStreak'
 import type { Habit } from './types'
 import './App.css'
@@ -42,11 +43,14 @@ function App() {
   function completeHabit(id: string) {
     const today = todayISO()
     setHabits((prev) =>
-      prev.map((h) =>
-        h.id === id && !h.completedDates.includes(today)
-          ? { ...h, completedDates: [...h.completedDates, today] }
-          : h,
-      ),
+      prev.map((h) => {
+        if (h.id !== id) return h
+        if (h.completedDates.includes(today)) {
+          // Toggle: un-complete for today
+          return { ...h, completedDates: h.completedDates.filter((d) => d !== today) }
+        }
+        return { ...h, completedDates: [...h.completedDates, today] }
+      }),
     )
   }
 
@@ -55,6 +59,7 @@ function App() {
       <h1 className="app-title">Habit Tracker</h1>
       <HabitInput onAdd={addHabit} />
       <HabitList habits={habits} onComplete={completeHabit} />
+      <WeeklyStatsChart habits={habits} />
     </main>
   )
 }
