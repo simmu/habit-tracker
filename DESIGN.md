@@ -39,6 +39,13 @@ Use a grayscale foundation with a single muted accent. No second accent.
 - Corner radius: a consistent, gentle `8px` everywhere. No mixing radii.
 - Roomy tap targets (min ~40px tall) so it feels calm to use, not fiddly.
 
+## Theming (dark mode and any future themes)
+A theme is a RE-SKIN of the token system, never a parallel set of styles: it overrides
+the CSS variables above (backgrounds, surfaces, text, borders, accent tint) in one place,
+under a single class or data-attribute. Components never know which theme is active —
+they only ever reference tokens. Both modes must satisfy every rule in this document,
+including "no new hardcoded colors."
+
 ## The bar it must clear
 Someone should look at a screen and think "clean and intentional," not "default template."
 If a choice adds visual noise without adding clarity, remove it.
