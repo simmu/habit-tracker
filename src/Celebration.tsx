@@ -10,6 +10,7 @@ interface ConfettiPiece {
   size: number
   delay: number
   duration: number
+  rise: string
   drift: number
   rotateDir: number
   shape: 'rect' | 'circle'
@@ -23,6 +24,7 @@ function generateConfetti(count: number): ConfettiPiece[] {
     size: 6 + Math.random() * 8,
     delay: Math.random() * 0.5,
     duration: 3 + Math.random() * 1.5,
+    rise: `${-30 - Math.random() * 55}svh`,
     drift: (Math.random() - 0.5) * 160,
     rotateDir: Math.random() > 0.5 ? 1 : -1,
     shape: Math.random() > 0.5 ? 'rect' : 'circle',
@@ -60,6 +62,7 @@ export default function Celebration({ show }: Props) {
                 '--size': `${c.size}px`,
                 '--delay': `${c.delay}s`,
                 '--duration': `${c.duration}s`,
+                '--rise': c.rise,
                 '--drift': `${c.drift}px`,
                 '--rotate-dir': c.rotateDir,
               } as React.CSSProperties}

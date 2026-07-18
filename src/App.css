@@ -203,11 +203,15 @@
   8% {
     opacity: 1;
   }
-  35% {
-    transform: translateY(calc(-50svh - var(--size) * 2)) translateX(calc(var(--drift) * 0.2)) rotate(calc(90deg * var(--rotate-dir)));
+  40% {
+    transform: translateY(var(--rise)) translateX(calc(var(--drift) * 0.2)) rotate(calc(120deg * var(--rotate-dir)));
+    animation-timing-function: ease-in;
+  }
+  90% {
+    opacity: 1;
   }
   100% {
-    transform: translateY(28svh) translateX(var(--drift)) rotate(calc(720deg * var(--rotate-dir)));
+    transform: translateY(110svh) translateX(var(--drift)) rotate(calc(720deg * var(--rotate-dir)));
     opacity: 0;
   }
 }
