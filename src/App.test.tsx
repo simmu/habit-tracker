@@ -32,6 +32,10 @@ function undo(name: string) {
   return userEvent.click(screen.getByRole('button', { name: new RegExp(`${name} done today, click to undo`, 'i') }))
 }
 
+function getThemeToggle() {
+  return screen.getByRole('button', { name: /switch to (light|dark) mode/i })
+}
+
 describe('App – add habit flow', () => {
   it('renders the page heading', () => {
     render(<App />)
@@ -189,5 +193,33 @@ describe('App – persistence', () => {
     // Run streak = 1, Read streak = 0
     expect(screen.getByLabelText(/^1 day streak$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^0 day streak$/i)).toBeInTheDocument()
+  })
+})
+
+describe('App – dark mode toggle', () => {
+  it('shows a theme toggle on the main habit view', () => {
+    render(<App />)
+    expect(getThemeToggle()).toBeInTheDocument()
+  })
+
+  it('toggles the whole app to dark mode and back', async () => {
+    render(<App />)
+    const toggle = screen.getByRole('button', { name: /switch to dark mode/i })
+
+    await userEvent.click(toggle)
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+
+    await userEvent.click(screen.getByRole('button', { name: /switch to light mode/i }))
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+  })
+
+  it('remembers the chosen mode across reloads', async () => {
+    const { unmount } = render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /switch to dark mode/i }))
+    unmount()
+
+    render(<App />)
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+    expect(screen.getByRole('button', { name: /switch to light mode/i })).toBeInTheDocument()
   })
 })

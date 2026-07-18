@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import HabitInput from './HabitInput'
 import HabitList from './HabitList'
 import ProgressRing from './ProgressRing'
+import ThemeToggle from './ThemeToggle'
 import { todayISO } from './useStreak'
 import type { Habit } from './types'
 import './App.css'
@@ -66,7 +67,10 @@ function App() {
 
   return (
     <main className="app">
-      <h1 className="app-title">Habit Tracker</h1>
+      <header className="app-header">
+        <h1 className="app-title">Habit Tracker</h1>
+        <ThemeToggle />
+      </header>
       <HabitInput onAdd={addHabit} />
       <section className="progress-section" aria-label="Today's progress">
         <ProgressRing percentage={percentage} />

@@ -5,10 +5,52 @@
   font-family: var(--sans);
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .app-title {
   font-size: 1.5rem;
-  margin-bottom: 24px;
   text-align: center;
+  flex: 1;
+}
+
+/* ── Theme toggle ───────────────────────────────────────── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent);
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.theme-toggle:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.theme-toggle__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle__label {
+  min-width: 2.25ch;
+  text-align: left;
 }
 
 /* ── Input ──────────────────────────────────────────────── */
@@ -108,6 +150,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
 }
 
 /* ── Habit actions (streak + button) ────────────────────── */
