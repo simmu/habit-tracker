@@ -122,6 +122,80 @@
   color: var(--text-soft);
 }
 
+/* ── Celebration ────────────────────────────────────────── */
+.celebration {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.celebration__burst {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.celebration__particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  animation: celebration-burst 0.8s ease-out forwards;
+  animation-delay: calc(var(--i) * 0.03s);
+}
+
+@keyframes celebration-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+    opacity: 0;
+  }
+}
+
+.celebration__label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  opacity: 0;
+  animation: celebration-fade 2.2s ease-in-out forwards;
+}
+
+@keyframes celebration-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
 /* ── List ───────────────────────────────────────────────── */
 .habit-list {
   list-style: none;
