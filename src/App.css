@@ -203,9 +203,9 @@
   8% {
     opacity: 1;
   }
-  40% {
-    transform: translateY(var(--rise)) translateX(calc(var(--drift) * 0.2)) rotate(calc(120deg * var(--rotate-dir)));
-    animation-timing-function: ease-in;
+  35% {
+    transform: translateY(var(--rise)) translateX(calc(var(--drift) * 0.15)) rotate(calc(120deg * var(--rotate-dir)));
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 1);
   }
   90% {
     opacity: 1;

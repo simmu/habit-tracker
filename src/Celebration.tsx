@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-const CONFETTI_COUNT = 50
+const CONFETTI_COUNT = 30
 const COLORS = ['var(--accent)', 'var(--text-soft)']
 
 interface ConfettiPiece {
@@ -23,9 +23,9 @@ function generateConfetti(count: number): ConfettiPiece[] {
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     size: 6 + Math.random() * 8,
     delay: Math.random() * 0.5,
-    duration: 3 + Math.random() * 1.5,
-    rise: `${-30 - Math.random() * 55}svh`,
-    drift: (Math.random() - 0.5) * 160,
+    duration: 2 + Math.random() * 0.8,
+    rise: `${-20 - Math.random() * 45}svh`,
+    drift: (Math.random() - 0.5) * 200,
     rotateDir: Math.random() > 0.5 ? 1 : -1,
     shape: Math.random() > 0.5 ? 'rect' : 'circle',
   }))
