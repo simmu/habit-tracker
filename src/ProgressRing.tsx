@@ -7,7 +7,7 @@ interface Props {
 export default function ProgressRing({
   percentage,
   size = 80,
-  strokeWidth = 8,
+  strokeWidth = 6,
 }: Props) {
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
