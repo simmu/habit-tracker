@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 _checker.mjs
 _smoke.mjs
+PRD.md
