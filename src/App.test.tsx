@@ -111,3 +111,106 @@ describe('App – persistence', () => {
     expect(screen.getByLabelText(/^0 day streak$/i)).toBeInTheDocument()
   })
 })
+
+describe('App – search / filter', () => {
+  it('renders the search box above the habit list', () => {
+    render(<App />)
+    expect(screen.getByRole('searchbox', { name: /search habits/i })).toBeInTheDocument()
+  })
+
+  it('filters habits by the typed search text (case-insensitive)', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+    await userEvent.type(addInput, 'Evening yoga{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'RUN')
+
+    expect(screen.getByText('Morning run')).toBeInTheDocument()
+    expect(screen.queryByText('Evening yoga')).not.toBeInTheDocument()
+  })
+
+  it('shows all habits when the search box is empty', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+    await userEvent.type(addInput, 'Evening yoga{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'run')
+    await userEvent.clear(searchBox)
+
+    expect(screen.getByText('Morning run')).toBeInTheDocument()
+    expect(screen.getByText('Evening yoga')).toBeInTheDocument()
+  })
+
+  it('shows "No habits match your search" when nothing matches', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'zzz')
+
+    expect(screen.getByText(/no habits match your search/i)).toBeInTheDocument()
+  })
+
+  it('the × button clears the search and restores all habits', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+    await userEvent.type(addInput, 'Evening yoga{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'run')
+
+    expect(screen.queryByText('Evening yoga')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /clear search/i }))
+
+    expect(screen.getByText('Morning run')).toBeInTheDocument()
+    expect(screen.getByText('Evening yoga')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
+  })
+
+  it('× button is absent when the search box is empty', async () => {
+    render(<App />)
+    expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
+  })
+
+  it('shows a new habit that matches the active search filter', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'run')
+
+    // Adding a matching habit while search is active
+    await userEvent.type(addInput, 'Evening run{Enter}')
+    expect(screen.getByText('Evening run')).toBeInTheDocument()
+  })
+
+  it('hides a new habit that does not match the active search filter', async () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    await userEvent.type(addInput, 'Morning run{Enter}')
+
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+    await userEvent.type(searchBox, 'run')
+
+    // Adding a non-matching habit while search is active
+    await userEvent.type(addInput, 'Evening yoga{Enter}')
+    expect(screen.queryByText('Evening yoga')).not.toBeInTheDocument()
+    expect(screen.getByText('Morning run')).toBeInTheDocument()
+  })
+
+  it('search box and add-habit input are visually distinct (different CSS classes)', () => {
+    render(<App />)
+    const addInput = screen.getByRole('textbox', { name: /new habit name/i })
+    const searchBox = screen.getByRole('searchbox', { name: /search habits/i })
+
+    expect(addInput.className).not.toBe(searchBox.className)
+  })
+})

@@ -12,7 +12,7 @@
   text-align: center;
 }
 
-/* ── Input ──────────────────────────────────────────────── */
+/* ── Add-habit input ────────────────────────────────────── */
 .habit-input {
   width: 100%;
   box-sizing: border-box;
@@ -22,9 +22,58 @@
   border-radius: 8px;
   outline: none;
   transition: border-color 0.2s;
+  background: #fff;
 
   &:focus {
     border-color: #646cff;
+  }
+}
+
+/* ── Search box ─────────────────────────────────────────── */
+.habit-search-wrapper {
+  position: relative;
+  margin-top: 10px;
+}
+
+.habit-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 36px 8px 12px;
+  font-size: 0.95rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  background: #f9fafb;
+  color: #374151;
+  transition: border-color 0.2s, background 0.2s;
+
+  /* Remove the browser-native clear button so we render our own */
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  &:focus {
+    border-color: #9ca3af;
+    background: #fff;
+  }
+}
+
+.habit-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #9ca3af;
+  padding: 2px 4px;
+  border-radius: 4px;
+
+  &:hover {
+    color: #374151;
   }
 }
 

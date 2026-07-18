@@ -1,23 +1,22 @@
-# PRD: Streak Counter
+# PRD: Habit Search / Filter
 
 ## Why
-Users need instant feedback on their consistency so they stay motivated to keep habits going every day. Right now there is no visible record of consecutive days, making it hard to feel the momentum of a streak.
+As the habit list grows, it becomes hard to find a specific habit quickly. A search box lets users instantly narrow the list to just the habits they care about.
 
 ## What
-Each habit displays a live streak counter showing how many consecutive calendar days in a row it has been marked done. The counter is shown next to the habit name using a flame emoji (🔥) and a number. Marking a habit done today increases the streak by 1. If a day is skipped (i.e. the habit was not marked done yesterday), the streak resets to 0. Completing a habit more than once in the same day does not inflate the streak. The streak persists across page refreshes.
+A search box appears prominently above the habit list. As the user types, the habit list filters in real time to show only habits whose names contain the typed text (case-insensitive). When the search box is empty, all habits are shown as normal. A small clear ("×") button appears inside the search box whenever there is text, allowing the user to reset the filter with one click. If no habits match the search query, a friendly "No habits match your search" message is shown in place of the list.
 
 ## Done when (each line must be testable by clicking the app)
-- [ ] A newly added habit shows a streak of 🔥 0
-- [ ] Clicking "Mark done" on a habit for the first time increments its streak from 0 to 1
-- [ ] Clicking "Mark done" again on the same day does not increase the streak beyond 1
-- [ ] After the streak is at least 1, the number displayed next to 🔥 matches the count of consecutive days the habit has been checked off
-- [ ] The streak value is still correct after the page is refreshed (data persists)
-- [ ] Two different habits each show their own independent streak counters that update separately
-- [ ] A habit that has never been marked done always shows 🔥 0
+- [ ] A search input box is visible above the habit list on the main screen
+- [ ] Typing a partial name into the search box immediately hides habits that do not match and shows only habits whose names contain the typed text (case-insensitive)
+- [ ] Clearing the search box (manually or via the × button) restores the full habit list
+- [ ] A × button appears inside the search box when it contains text, and clicking it clears the box and restores all habits
+- [ ] When the search term matches no habits, a "No habits match your search" message is displayed instead of a blank list
+- [ ] Adding a new habit while a search is active either shows the new habit if its name matches the current filter, or hides it if it does not
+- [ ] The habit-add input and the search box are visually distinct so users can tell them apart
 
 ## Out of scope (what we are NOT doing right now)
-- Manually editing or overriding the streak count
-- Notifications or reminders when a streak is about to break
-- Longest-streak or best-streak history
-- Streak milestones, badges, or animations
-- Visualising past check-off history (e.g. calendar heatmap)
+- Searching by tags, notes, or any field other than habit name
+- Saving or persisting the last search term across page reloads
+- Fuzzy / typo-tolerant matching
+- Highlighting the matched portion of the habit name in the results

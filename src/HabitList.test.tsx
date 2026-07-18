@@ -31,4 +31,16 @@ describe('HabitList', () => {
     render(<HabitList habits={habits} onComplete={vi.fn()} />)
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
   })
+
+  it('shows "No habits match your search" when searchActive is true and list is empty', () => {
+    render(<HabitList habits={[]} onComplete={vi.fn()} searchActive />)
+    expect(screen.getByText(/no habits match your search/i)).toBeInTheDocument()
+    expect(screen.queryByText(/no habits yet/i)).not.toBeInTheDocument()
+  })
+
+  it('shows the normal empty message when searchActive is false and list is empty', () => {
+    render(<HabitList habits={[]} onComplete={vi.fn()} searchActive={false} />)
+    expect(screen.getByText(/no habits yet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/no habits match your search/i)).not.toBeInTheDocument()
+  })
 })
