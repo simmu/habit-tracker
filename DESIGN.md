@@ -39,6 +39,18 @@ Use a grayscale foundation with a single muted accent. No second accent.
 - Corner radius: a consistent, gentle `8px` everywhere. No mixing radii.
 - Roomy tap targets (min ~40px tall) so it feels calm to use, not fiddly.
 
+## Moments of delight (deliberate exception to "calm")
+Completing ALL of today's habits is the one moment this app may celebrate out loud:
+- A confetti burst rises from the bottom and drifts gently back down — bold in kind,
+  calm in manner (a few seconds, then gone).
+- Confetti uses palette tokens only (`--accent`, `--accent-soft`, `--text-soft`).
+  Never purple, per the hard rules above.
+- A brief, soft completion sound (<1s, quiet, synthesized in WebAudio — no audio files).
+- If the system signals reduced motion (`prefers-reduced-motion`), skip the confetti
+  and show the calm completion label instead.
+- This exception covers ONLY the daily-completion celebration. Everything else in the
+  app stays calm. (Decided by sim, 2026-07-18, after live demo review.)
+
 ## Theming (dark mode and any future themes)
 A theme is a RE-SKIN of the token system, never a parallel set of styles: it overrides
 the CSS variables above (backgrounds, surfaces, text, borders, accent tint) in one place,

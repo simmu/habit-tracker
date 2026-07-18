@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import HabitInput from './HabitInput'
 import HabitList from './HabitList'
 import ProgressRing from './ProgressRing'
 import ThemeToggle from './ThemeToggle'
+import Celebration from './Celebration'
+import { playCelebrationSound } from './celebrationSound'
 import { todayISO } from './useStreak'
 import type { Habit } from './types'
 import './App.css'
 
 const STORAGE_KEY = 'habit-tracker:habits'
+const CELEBRATION_DURATION_MS = 4000
 
 function loadHabits(): Habit[] {
   try {
@@ -35,10 +38,44 @@ function computeTodayProgress(habits: Habit[]): { percentage: number; completed:
 
 function App() {
   const [habits, setHabits] = useState<Habit[]>(loadHabits)
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [celebrationKey, setCelebrationKey] = useState(0)
+  const celebratedRef = useRef(false)
+  const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     saveHabits(habits)
   }, [habits])
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimerRef.current) {
+        clearTimeout(celebrationTimerRef.current)
+      }
+    }
+  }, [])
+
+  const { percentage, completed, total } = computeTodayProgress(habits)
+
+  function clearCelebration() {
+    setShowCelebration(false)
+    celebratedRef.current = false
+    if (celebrationTimerRef.current) {
+      clearTimeout(celebrationTimerRef.current)
+      celebrationTimerRef.current = null
+    }
+  }
+
+  function triggerCelebration() {
+    if (celebratedRef.current) return
+    celebratedRef.current = true
+    setCelebrationKey((prev) => prev + 1)
+    setShowCelebration(true)
+    playCelebrationSound()
+    celebrationTimerRef.current = setTimeout(() => {
+      setShowCelebration(false)
+    }, CELEBRATION_DURATION_MS)
+  }
 
   function addHabit(name: string) {
     const newHabit: Habit = {
@@ -47,23 +84,31 @@ function App() {
       completedDates: [],
     }
     setHabits((prev) => [...prev, newHabit])
+    clearCelebration()
   }
 
   function toggleHabit(id: string) {
     const today = todayISO()
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== id) return h
-        const completedToday = h.completedDates.includes(today)
-        if (completedToday) {
-          return { ...h, completedDates: h.completedDates.filter((d) => d !== today) }
-        }
-        return { ...h, completedDates: [...h.completedDates, today] }
-      }),
-    )
-  }
+    const nextHabits = habits.map((h) => {
+      if (h.id !== id) return h
+      const completedToday = h.completedDates.includes(today)
+      if (completedToday) {
+        return { ...h, completedDates: h.completedDates.filter((d) => d !== today) }
+      }
+      return { ...h, completedDates: [...h.completedDates, today] }
+    })
 
-  const { percentage, completed, total } = computeTodayProgress(habits)
+    setHabits(nextHabits)
+
+    const { completed: nextCompleted, total: nextTotal } = computeTodayProgress(nextHabits)
+    const allDone = nextTotal > 0 && nextCompleted === nextTotal
+
+    if (!allDone) {
+      clearCelebration()
+    } else {
+      triggerCelebration()
+    }
+  }
 
   return (
     <main className="app">
@@ -76,6 +121,7 @@ function App() {
         <ProgressRing percentage={percentage} />
         <span className="progress-text">{completed} of {total} habits done</span>
       </section>
+      <Celebration key={celebrationKey} show={showCelebration} />
       <HabitList habits={habits} onToggle={toggleHabit} />
     </main>
   )

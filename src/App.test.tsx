@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
+
+vi.mock('./celebrationSound', () => ({
+  playCelebrationSound: vi.fn(),
+}))
 
 // Only fake the Date object – leave setTimeout/Promise intact so userEvent works.
 beforeEach(() => {
@@ -34,6 +38,10 @@ function undo(name: string) {
 
 function getThemeToggle() {
   return screen.getByRole('button', { name: /switch to (light|dark) mode/i })
+}
+
+function getCelebration() {
+  return screen.queryByRole('status', { name: /all habits complete/i })
 }
 
 describe('App – add habit flow', () => {
@@ -221,5 +229,89 @@ describe('App – dark mode toggle', () => {
     render(<App />)
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     expect(screen.getByRole('button', { name: /switch to light mode/i })).toBeInTheDocument()
+  })
+})
+
+describe('App – daily completion celebration', () => {
+  it('does not show the celebration when no habits exist', () => {
+    render(<App />)
+    expect(getCelebration()).not.toBeInTheDocument()
+  })
+
+  it('does not show the celebration when only some habits are checked', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+
+    expect(getCelebration()).not.toBeInTheDocument()
+  })
+
+  it('shows the celebration when the last habit is checked', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    await markDone('Run')
+
+    expect(getCelebration()).toBeInTheDocument()
+  })
+
+  it('dismisses the celebration when any habit is unchecked', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    await markDone('Run')
+    expect(getCelebration()).toBeInTheDocument()
+
+    await undo('Run')
+
+    expect(getCelebration()).not.toBeInTheDocument()
+  })
+
+  it('allows the celebration to be re-earned after unchecking', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    await markDone('Run')
+    expect(getCelebration()).toBeInTheDocument()
+
+    await undo('Run')
+    expect(getCelebration()).not.toBeInTheDocument()
+
+    await markDone('Run')
+    expect(getCelebration()).toBeInTheDocument()
+  })
+
+  it('dismisses the celebration automatically after a brief moment', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    await markDone('Read')
+    expect(getCelebration()).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(getCelebration()).not.toBeInTheDocument()
+    }, { timeout: 5000 })
+  })
+
+  it('does not celebrate on initial load even if all habits are already done', async () => {
+    // First session: add and complete a habit
+    const { unmount } = render(<App />)
+    await addHabit('Read')
+    await markDone('Read')
+    expect(getCelebration()).toBeInTheDocument()
+    unmount()
+
+    // Second session: re-mounting should not re-trigger the celebration
+    render(<App />)
+    expect(screen.getByText('Read')).toBeInTheDocument()
+    expect(getCelebration()).not.toBeInTheDocument()
   })
 })
