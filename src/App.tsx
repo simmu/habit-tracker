@@ -52,8 +52,10 @@ function App() {
     )
   }
 
-  const filteredHabits = searchQuery
-    ? habits.filter((h) => h.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const trimmedQuery = searchQuery.trim()
+
+  const filteredHabits = trimmedQuery
+    ? habits.filter((h) => h.name.toLowerCase().includes(trimmedQuery.toLowerCase()))
     : habits
 
   return (
@@ -61,7 +63,7 @@ function App() {
       <h1 className="app-title">Habit Tracker</h1>
       <HabitInput onAdd={addHabit} />
       <HabitSearch value={searchQuery} onChange={setSearchQuery} />
-      <HabitList habits={filteredHabits} onComplete={completeHabit} searchActive={!!searchQuery} />
+      <HabitList habits={filteredHabits} onComplete={completeHabit} searchActive={!!trimmedQuery} />
     </main>
   )
 }
