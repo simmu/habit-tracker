@@ -1,23 +1,21 @@
-# PRD: Streak Counter
+# PRD: Today's Habits Progress Ring
 
 ## Why
-Users need instant feedback on their consistency so they stay motivated to keep habits going every day. Right now there is no visible record of consecutive days, making it hard to feel the momentum of a streak.
+Users want an at-a-glance sense of accomplishment for the current day, so they can quickly see how close they are to finishing all of today's habits.
 
 ## What
-Each habit displays a live streak counter showing how many consecutive calendar days in a row it has been marked done. The counter is shown next to the habit name using a flame emoji (🔥) and a number. Marking a habit done today increases the streak by 1. If a day is skipped (i.e. the habit was not marked done yesterday), the streak resets to 0. Completing a habit more than once in the same day does not inflate the streak. The streak persists across page refreshes.
+Display a circular progress ring near the top of the habit list that fills in proportion to how many habits have been checked in today. The ring shows the current completion percentage for today only, and updates immediately as habits are checked or unchecked.
 
 ## Done when (each line must be testable by clicking the app)
-- [ ] A newly added habit shows a streak of 🔥 0
-- [ ] Clicking "Mark done" on a habit for the first time increments its streak from 0 to 1
-- [ ] Clicking "Mark done" again on the same day does not increase the streak beyond 1
-- [ ] After the streak is at least 1, the number displayed next to 🔥 matches the count of consecutive days the habit has been checked off
-- [ ] The streak value is still correct after the page is refreshed (data persists)
-- [ ] Two different habits each show their own independent streak counters that update separately
-- [ ] A habit that has never been marked done always shows 🔥 0
+- [ ] The progress ring appears on the main habit list screen.
+- [ ] With no habits checked in today, the ring shows 0% complete.
+- [ ] Checking a habit today increases the ring's fill and percentage.
+- [ ] Unchecking a habit today decreases the ring's fill and percentage.
+- [ ] When all habits are checked in today, the ring shows 100% complete.
+- [ ] The percentage text inside or next to the ring matches the fill level.
 
 ## Out of scope (what we are NOT doing right now)
-- Manually editing or overriding the streak count
-- Notifications or reminders when a streak is about to break
-- Longest-streak or best-streak history
-- Streak milestones, badges, or animations
-- Visualising past check-off history (e.g. calendar heatmap)
+- Weekly, monthly, or all-time progress summaries.
+- Per-day habit assignment or scheduling (the ring reflects today's check-ins only).
+- Goal/target settings such as "complete 3 of 5."
+- Streaks, categories, reminders, or notifications.

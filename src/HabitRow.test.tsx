@@ -25,10 +25,10 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
   }
 }
 
-function renderRow(habit: Habit, onComplete = vi.fn()) {
+function renderRow(habit: Habit, onToggle = vi.fn()) {
   return render(
     <ul>
-      <HabitRow habit={habit} onComplete={onComplete} />
+      <HabitRow habit={habit} onToggle={onToggle} />
     </ul>,
   )
 }
@@ -67,27 +67,23 @@ describe('HabitRow', () => {
   it('shows a "✓ Done" button when already completed today', () => {
     renderRow(makeHabit({ completedDates: [TODAY] }))
     expect(
-      screen.getByRole('button', { name: /exercise already done today/i }),
+      screen.getByRole('button', { name: /exercise done today, click to undo/i }),
     ).toBeInTheDocument()
   })
 
-  it('calls onComplete with the habit id when the button is clicked', async () => {
-    const onComplete = vi.fn()
-    renderRow(makeHabit(), onComplete)
+  it('calls onToggle with the habit id when the button is clicked', async () => {
+    const onToggle = vi.fn()
+    renderRow(makeHabit(), onToggle)
     await userEvent.click(screen.getByRole('button', { name: /mark exercise as done/i }))
-    expect(onComplete).toHaveBeenCalledOnce()
-    expect(onComplete).toHaveBeenCalledWith('habit-1')
+    expect(onToggle).toHaveBeenCalledOnce()
+    expect(onToggle).toHaveBeenCalledWith('habit-1')
   })
 
-  it('disables the button after the habit is completed today', () => {
-    renderRow(makeHabit({ completedDates: [TODAY] }))
-    expect(screen.getByRole('button')).toBeDisabled()
-  })
-
-  it('does not call onComplete when the done button is disabled', async () => {
-    const onComplete = vi.fn()
-    renderRow(makeHabit({ completedDates: [TODAY] }), onComplete)
-    await userEvent.click(screen.getByRole('button'))
-    expect(onComplete).not.toHaveBeenCalled()
+  it('calls onToggle with the habit id when undoing a completed habit', async () => {
+    const onToggle = vi.fn()
+    renderRow(makeHabit({ completedDates: [TODAY] }), onToggle)
+    await userEvent.click(screen.getByRole('button', { name: /exercise done today, click to undo/i }))
+    expect(onToggle).toHaveBeenCalledOnce()
+    expect(onToggle).toHaveBeenCalledWith('habit-1')
   })
 })

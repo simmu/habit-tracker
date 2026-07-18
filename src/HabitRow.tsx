@@ -3,10 +3,10 @@ import type { Habit } from './types'
 
 interface Props {
   habit: Habit
-  onComplete: (id: string) => void
+  onToggle: (id: string) => void
 }
 
-export default function HabitRow({ habit, onComplete }: Props) {
+export default function HabitRow({ habit, onToggle }: Props) {
   const today = todayISO()
   const completedToday = habit.completedDates.includes(today)
   const streak = computeStreak(habit.completedDates)
@@ -26,9 +26,12 @@ export default function HabitRow({ habit, onComplete }: Props) {
 
         <button
           className={`habit-done-btn${completedToday ? ' habit-done-btn--done' : ''}`}
-          onClick={() => onComplete(habit.id)}
-          disabled={completedToday}
-          aria-label={completedToday ? `${habit.name} already done today` : `Mark ${habit.name} as done`}
+          onClick={() => onToggle(habit.id)}
+          aria-label={
+            completedToday
+              ? `${habit.name} done today, click to undo`
+              : `Mark ${habit.name} as done`
+          }
         >
           {completedToday ? '✓ Done' : 'Mark done'}
         </button>
