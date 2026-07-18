@@ -8,9 +8,12 @@ describe('Celebration', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
-  it('renders a status announcement when show is true', () => {
+  it('renders a status announcement and confetti when show is true', () => {
     render(<Celebration show={true} />)
-    expect(screen.getByRole('status', { name: /all habits complete/i })).toBeInTheDocument()
-    expect(screen.getByText('All done!')).toBeInTheDocument()
+    expect(
+      screen.getByRole('status', { name: /all habits complete/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('All caught up')).toBeInTheDocument()
+    expect(document.querySelectorAll('.celebration__piece').length).toBeGreaterThan(0)
   })
 })

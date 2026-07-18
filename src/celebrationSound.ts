@@ -22,29 +22,23 @@ export function playCelebrationSound(): void {
     }
 
     const now = ctx.currentTime
-    const duration = 0.7
+    const duration = 0.55
 
     const master = ctx.createGain()
     master.gain.setValueAtTime(0, now)
-    master.gain.linearRampToValueAtTime(0.1, now + 0.03)
+    master.gain.linearRampToValueAtTime(0.06, now + 0.04)
     master.gain.exponentialRampToValueAtTime(0.001, now + duration)
     master.connect(ctx.destination)
 
-    const osc1 = ctx.createOscillator()
-    osc1.type = 'sine'
-    osc1.frequency.setValueAtTime(523.25, now)
-    osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.35)
-    osc1.connect(master)
-    osc1.start(now)
-    osc1.stop(now + duration)
-
-    const osc2 = ctx.createOscillator()
-    osc2.type = 'sine'
-    osc2.frequency.setValueAtTime(659.25, now + 0.08)
-    osc2.frequency.exponentialRampToValueAtTime(987.77, now + 0.45)
-    osc2.connect(master)
-    osc2.start(now + 0.08)
-    osc2.stop(now + duration)
+    const freqs = [523.25, 659.25, 783.99]
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      osc.type = i === 0 ? 'sine' : 'triangle'
+      osc.frequency.setValueAtTime(freq, now + i * 0.05)
+      osc.connect(master)
+      osc.start(now + i * 0.05)
+      osc.stop(now + duration)
+    })
   } catch {
     // Audio is optional; ignore failures.
   }
