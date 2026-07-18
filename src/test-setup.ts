@@ -7,4 +7,5 @@ expect.extend(matchers)
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  document.documentElement.removeAttribute('data-theme')
 })
