@@ -25,12 +25,20 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
   }
 }
 
-function renderRow(habit: Habit, onToggle = vi.fn()) {
+function renderRow(
+  habit: Habit,
+  onToggle = vi.fn(),
+  onDelete = vi.fn(),
+) {
   return render(
     <ul>
-      <HabitRow habit={habit} onToggle={onToggle} />
+      <HabitRow habit={habit} onToggle={onToggle} onDelete={onDelete} />
     </ul>,
   )
+}
+
+function getDeleteButton(name = 'Exercise') {
+  return screen.getByRole('button', { name: new RegExp(`delete ${name}`, 'i') })
 }
 
 describe('HabitRow', () => {
@@ -85,5 +93,35 @@ describe('HabitRow', () => {
     await userEvent.click(screen.getByRole('button', { name: /exercise done today, click to undo/i }))
     expect(onToggle).toHaveBeenCalledOnce()
     expect(onToggle).toHaveBeenCalledWith('habit-1')
+  })
+
+  it('shows a delete button for the habit', () => {
+    renderRow(makeHabit())
+    expect(getDeleteButton()).toBeInTheDocument()
+  })
+
+  it('opens a confirmation prompt when delete is chosen', async () => {
+    renderRow(makeHabit())
+    await userEvent.click(getDeleteButton())
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/permanently delete/i)).toBeInTheDocument()
+  })
+
+  it('calls onDelete with the habit id when deletion is confirmed', async () => {
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    await userEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+    expect(onDelete).toHaveBeenCalledOnce()
+    expect(onDelete).toHaveBeenCalledWith('habit-1')
+  })
+
+  it('does not call onDelete when deletion is canceled', async () => {
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    await userEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

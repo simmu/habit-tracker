@@ -315,3 +315,79 @@ describe('App – daily completion celebration', () => {
     expect(getCelebration()).not.toBeInTheDocument()
   })
 })
+
+function startDelete(name: string) {
+  return userEvent.click(screen.getByRole('button', { name: new RegExp(`delete ${name}`, 'i') }))
+}
+
+function confirmDelete() {
+  return userEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+}
+
+function cancelDelete() {
+  return userEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+}
+
+describe('App – delete habit flow', () => {
+  it('removes the habit from the list after confirming deletion', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    await startDelete('Read')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/permanently delete/i)).toBeInTheDocument()
+
+    await confirmDelete()
+    expect(screen.queryByText('Read')).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('leaves the habit untouched when deletion is canceled', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    await startDelete('Read')
+    await cancelDelete()
+
+    expect(screen.getByText('Read')).toBeInTheDocument()
+  })
+
+  it('updates the progress ring after deleting a completed habit', async () => {
+    render(<App />)
+    await addHabit('Read')
+    await addHabit('Run')
+
+    await markDone('Read')
+    expect(getProgressRing()).toHaveAttribute('aria-label', '50% complete')
+    expect(getProgressText()).toHaveTextContent('1 of 2 habits done')
+
+    await startDelete('Read')
+    await confirmDelete()
+
+    expect(getProgressRing()).toHaveAttribute('aria-label', '0% complete')
+    expect(getProgressText()).toHaveTextContent('0 of 1 habits done')
+  })
+
+  it('clears the celebration when a completed habit is deleted', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    await markDone('Read')
+    expect(getCelebration()).toBeInTheDocument()
+
+    await startDelete('Read')
+    await confirmDelete()
+
+    expect(getCelebration()).not.toBeInTheDocument()
+  })
+
+  it('returns to the normal list without errors after deleting the last habit', async () => {
+    render(<App />)
+    await addHabit('Read')
+
+    await startDelete('Read')
+    await confirmDelete()
+
+    expect(screen.getByText(/no habits yet/i)).toBeInTheDocument()
+  })
+})

@@ -87,6 +87,11 @@ function App() {
     clearCelebration()
   }
 
+  function deleteHabit(id: string) {
+    setHabits((prev) => prev.filter((h) => h.id !== id))
+    clearCelebration()
+  }
+
   function toggleHabit(id: string) {
     const today = todayISO()
     const nextHabits = habits.map((h) => {
@@ -122,7 +127,7 @@ function App() {
         <span className="progress-text">{completed} of {total} habits done</span>
       </section>
       <Celebration key={celebrationKey} show={showCelebration} />
-      <HabitList habits={habits} onToggle={toggleHabit} />
+      <HabitList habits={habits} onToggle={toggleHabit} onDelete={deleteHabit} />
     </main>
   )
 }
