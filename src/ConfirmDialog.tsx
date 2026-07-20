@@ -6,6 +6,9 @@ interface ConfirmDialogProps {
   message: string
   confirmLabel?: string
   cancelLabel?: string
+  showDoNotAskAgain?: boolean
+  doNotAskAgain?: boolean
+  onDoNotAskAgainChange?: (checked: boolean) => void
   onConfirm: () => void
   onCancel: () => void
 }
@@ -16,6 +19,9 @@ export default function ConfirmDialog({
   message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  showDoNotAskAgain = false,
+  doNotAskAgain = false,
+  onDoNotAskAgainChange,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -64,6 +70,16 @@ export default function ConfirmDialog({
         <p id="confirm-message" className="confirm-dialog__message">
           {message}
         </p>
+        {showDoNotAskAgain && (
+          <label className="confirm-dialog__checkbox">
+            <input
+              type="checkbox"
+              checked={doNotAskAgain}
+              onChange={(event) => onDoNotAskAgainChange?.(event.target.checked)}
+            />
+            <span>Do not ask again</span>
+          </label>
+        )}
         <div className="confirm-dialog__actions">
           <button
             type="button"

@@ -10,6 +10,28 @@ interface Props {
   onDelete: (id: string) => void
 }
 
+const SKIP_DELETE_CONFIRMATION_KEY = 'habit-tracker:skipDeleteConfirmation'
+
+function loadSkipDeleteConfirmation(): boolean {
+  try {
+    return localStorage.getItem(SKIP_DELETE_CONFIRMATION_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function saveSkipDeleteConfirmation(skip: boolean): void {
+  try {
+    if (skip) {
+      localStorage.setItem(SKIP_DELETE_CONFIRMATION_KEY, 'true')
+    } else {
+      localStorage.removeItem(SKIP_DELETE_CONFIRMATION_KEY)
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 function CheckIcon() {
   return (
     <svg
@@ -54,15 +76,30 @@ export default function HabitRow({ habit, onToggle, onDelete }: Props) {
   const completedToday = habit.completedDates.includes(today)
   const streak = computeStreak(habit.completedDates)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [doNotAskAgain, setDoNotAskAgain] = useState(false)
+  const [skipConfirmation, setSkipConfirmation] = useState(() => loadSkipDeleteConfirmation())
 
   const handleConfirm = useCallback(() => {
     setShowConfirm(false)
+    if (doNotAskAgain) {
+      saveSkipDeleteConfirmation(true)
+      setSkipConfirmation(true)
+    }
     onDelete(habit.id)
-  }, [onDelete, habit.id])
+  }, [onDelete, habit.id, doNotAskAgain])
 
   const handleCancel = useCallback(() => {
     setShowConfirm(false)
+    setDoNotAskAgain(false)
   }, [])
+
+  const handleDeleteClick = useCallback(() => {
+    if (skipConfirmation) {
+      onDelete(habit.id)
+    } else {
+      setShowConfirm(true)
+    }
+  }, [skipConfirmation, onDelete, habit.id])
 
   return (
     <>
@@ -81,7 +118,7 @@ export default function HabitRow({ habit, onToggle, onDelete }: Props) {
           <button
             type="button"
             className="habit-delete"
-            onClick={() => setShowConfirm(true)}
+            onClick={handleDeleteClick}
             aria-label={`Delete ${habit.name}`}
             title={`Delete ${habit.name}`}
           >
@@ -110,6 +147,9 @@ export default function HabitRow({ habit, onToggle, onDelete }: Props) {
           message={`This will permanently delete "${habit.name}" and its entire check-in history. This action cannot be undone.`}
           confirmLabel="Delete"
           cancelLabel="Cancel"
+          showDoNotAskAgain
+          doNotAskAgain={doNotAskAgain}
+          onDoNotAskAgainChange={setDoNotAskAgain}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
         />,
