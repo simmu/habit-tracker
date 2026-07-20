@@ -4,6 +4,7 @@ import type { Habit } from './types'
 interface Props {
   habits: Habit[]
   onToggle: (id: string) => void
+  onDelete: (id: string) => void
 }
 
 function RingIcon() {
@@ -25,7 +26,7 @@ function RingIcon() {
   )
 }
 
-export default function HabitList({ habits, onToggle }: Props) {
+export default function HabitList({ habits, onToggle, onDelete }: Props) {
   if (habits.length === 0) {
     return (
       <p className="habit-empty">
@@ -40,7 +41,7 @@ export default function HabitList({ habits, onToggle }: Props) {
   return (
     <ul className="habit-list">
       {habits.map((habit) => (
-        <HabitRow key={habit.id} habit={habit} onToggle={onToggle} />
+        <HabitRow key={habit.id} habit={habit} onToggle={onToggle} onDelete={onDelete} />
       ))}
     </ul>
   )

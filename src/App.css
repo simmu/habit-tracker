@@ -313,3 +313,117 @@
 .habit-empty__mark {
   color: var(--border);
 }
+
+/* ── Delete action ──────────────────────────────────────── */
+.habit-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  color: var(--text-soft);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.habit-delete:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ── Confirmation dialog ────────────────────────────────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.confirm-dialog {
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.confirm-dialog__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.confirm-dialog__message {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 24px;
+  color: var(--text-soft);
+}
+
+.confirm-dialog__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -16px 0 24px;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.confirm-dialog__checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-dialog__button {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.confirm-dialog__button--cancel {
+  color: var(--text);
+  background: transparent;
+}
+
+.confirm-dialog__button--cancel:hover {
+  background: var(--surface);
+}
+
+.confirm-dialog__button--confirm {
+  color: var(--bg);
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.confirm-dialog__button--confirm:hover {
+  background: var(--text-soft);
+  border-color: var(--text-soft);
+}

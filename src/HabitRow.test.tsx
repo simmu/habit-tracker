@@ -6,14 +6,17 @@ import type { Habit } from './types'
 
 const TODAY = '2024-06-15'
 const YESTERDAY = '2024-06-14'
+const SKIP_DELETE_CONFIRMATION_KEY = 'habit-tracker:skipDeleteConfirmation'
 
 // Only fake the Date object – leave setTimeout/Promise intact so userEvent works.
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(TODAY + 'T12:00:00Z'))
+  localStorage.clear()
 })
 afterEach(() => {
   vi.useRealTimers()
+  localStorage.clear()
 })
 
 function makeHabit(overrides: Partial<Habit> = {}): Habit {
@@ -25,12 +28,20 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
   }
 }
 
-function renderRow(habit: Habit, onToggle = vi.fn()) {
+function renderRow(
+  habit: Habit,
+  onToggle = vi.fn(),
+  onDelete = vi.fn(),
+) {
   return render(
     <ul>
-      <HabitRow habit={habit} onToggle={onToggle} />
+      <HabitRow habit={habit} onToggle={onToggle} onDelete={onDelete} />
     </ul>,
   )
+}
+
+function getDeleteButton(name = 'Exercise') {
+  return screen.getByRole('button', { name: new RegExp(`delete ${name}`, 'i') })
 }
 
 describe('HabitRow', () => {
@@ -85,5 +96,61 @@ describe('HabitRow', () => {
     await userEvent.click(screen.getByRole('button', { name: /exercise done today, click to undo/i }))
     expect(onToggle).toHaveBeenCalledOnce()
     expect(onToggle).toHaveBeenCalledWith('habit-1')
+  })
+
+  it('shows a delete button for the habit', () => {
+    renderRow(makeHabit())
+    expect(getDeleteButton()).toBeInTheDocument()
+  })
+
+  it('opens a confirmation prompt when delete is chosen', async () => {
+    renderRow(makeHabit())
+    await userEvent.click(getDeleteButton())
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/permanently delete/i)).toBeInTheDocument()
+  })
+
+  it('calls onDelete with the habit id when deletion is confirmed', async () => {
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    await userEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+    expect(onDelete).toHaveBeenCalledOnce()
+    expect(onDelete).toHaveBeenCalledWith('habit-1')
+  })
+
+  it('does not call onDelete when deletion is canceled', async () => {
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    await userEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('shows a "Do not ask again" checkbox in the confirmation dialog', async () => {
+    renderRow(makeHabit())
+    await userEvent.click(getDeleteButton())
+    expect(screen.getByRole('checkbox', { name: /do not ask again/i })).toBeInTheDocument()
+  })
+
+  it('saves the preference when "Do not ask again" is checked and deletion is confirmed', async () => {
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    await userEvent.click(screen.getByRole('checkbox', { name: /do not ask again/i }))
+    await userEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+    expect(onDelete).toHaveBeenCalledOnce()
+    expect(localStorage.getItem(SKIP_DELETE_CONFIRMATION_KEY)).toBe('true')
+  })
+
+  it('skips the confirmation dialog when the user has previously chosen not to be asked', async () => {
+    localStorage.setItem(SKIP_DELETE_CONFIRMATION_KEY, 'true')
+    const onDelete = vi.fn()
+    renderRow(makeHabit(), vi.fn(), onDelete)
+    await userEvent.click(getDeleteButton())
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(onDelete).toHaveBeenCalledOnce()
+    expect(onDelete).toHaveBeenCalledWith('habit-1')
   })
 })
