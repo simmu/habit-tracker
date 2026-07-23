@@ -22,24 +22,26 @@
 }
 
 .app-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
 }
 
 .app-title {
+  grid-column: 2;
   font-size: 1.5rem;
   text-align: center;
-  flex: 1;
 }
 
 /* ── Theme toggle ───────────────────────────────────────── */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  min-width: 88px;
   min-height: 40px;
   padding: 8px 16px;
   font-family: var(--sans);
@@ -66,8 +68,8 @@
 }
 
 .theme-toggle__label {
-  min-width: 2.25ch;
-  text-align: left;
+  min-width: auto;
+  text-align: center;
 }
 
 /* ── Input ──────────────────────────────────────────────── */
@@ -301,7 +303,8 @@
 }
 
 .habit-check:hover {
-  background: var(--surface);
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .habit-check--done {
