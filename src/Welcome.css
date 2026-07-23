@@ -1,0 +1,45 @@
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  opacity: 1;
+  transition: opacity 600ms ease;
+}
+
+.welcome--fading {
+  opacity: 0;
+}
+
+.welcome__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.welcome__mark {
+  color: var(--accent);
+}
+
+.welcome__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.welcome__subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome {
+    transition: none;
+  }
+}
