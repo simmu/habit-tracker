@@ -4,10 +4,13 @@ import HabitList from './HabitList'
 import ProgressRing from './ProgressRing'
 import ThemeToggle from './ThemeToggle'
 import Celebration from './Celebration'
+import Welcome from './Welcome'
 import { playCelebrationSound } from './celebrationSound'
 import { todayISO } from './useStreak'
+import { useWelcomeTransition } from './useWelcomeTransition'
 import type { Habit } from './types'
 import './App.css'
+import './Welcome.css'
 
 const STORAGE_KEY = 'habit-tracker:habits'
 const CELEBRATION_DURATION_MS = 4000
@@ -42,6 +45,7 @@ function App() {
   const [celebrationKey, setCelebrationKey] = useState(0)
   const celebratedRef = useRef(false)
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { showWelcome, welcomeFading } = useWelcomeTransition()
 
   useEffect(() => {
     saveHabits(habits)
@@ -111,19 +115,28 @@ function App() {
   }
 
   return (
-    <main className="app">
-      <header className="app-header">
-        <h1 className="app-title">Habit Tracker</h1>
-        <ThemeToggle />
-      </header>
-      <HabitInput onAdd={addHabit} />
-      <section className="progress-section" aria-label="Today's progress">
-        <ProgressRing percentage={percentage} />
-        <span className="progress-text">{completed} of {total} habits done</span>
-      </section>
-      <Celebration key={celebrationKey} show={showCelebration} />
-      <HabitList habits={habits} onToggle={toggleHabit} />
-    </main>
+    <>
+      {showWelcome && <Welcome fading={welcomeFading} />}
+      <div
+        className={`app-shell ${!showWelcome ? 'app-shell--visible' : ''}`}
+        aria-hidden={showWelcome}
+        inert={showWelcome}
+      >
+        <main className="app">
+          <header className="app-header">
+            <h1 className="app-title">Habit Tracker</h1>
+            <ThemeToggle />
+          </header>
+          <HabitInput onAdd={addHabit} />
+          <section className="progress-section" aria-label="Today's progress">
+            <ProgressRing percentage={percentage} />
+            <span className="progress-text">{completed} of {total} habits done</span>
+          </section>
+          <Celebration key={celebrationKey} show={showCelebration} />
+          <HabitList habits={habits} onToggle={toggleHabit} />
+        </main>
+      </div>
+    </>
   )
 }
 
